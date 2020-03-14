@@ -2,53 +2,28 @@ from torchtext import data
 import os
 import torch
 import json
-import pkuseg
+# import pkuseg
 import jieba
 import re
+from gensim.models.keyedvectors import KeyedVectors
+
+
 
 
 # seg = pkuseg.pkuseg()
 # def chinese_tokenize(tokens):
 #     return [token.replace("''", '"').replace("``", '"') for token in seg.cut(tokens)]
 
+
+
 def regex_change(line):
-    # URL，为了防止对中文的过滤，所以使用[a-zA-Z0-9]而不是\w
-    url_regex = re.compile(r"""
-        (https?://)?
-        ([a-zA-Z0-9]+)
-        (\.[a-zA-Z0-9]+)
-        (\.[a-zA-Z0-9]+)*
-        (/[a-zA-Z0-9]+)*
-    """, re.VERBOSE | re.IGNORECASE)
-    # 剔除日期
-    data_regex = re.compile(u"""        #utf-8编码
-        年 |
-        月 |
-        日 |
-        (周一) |
-        (周二) | 
-        (周三) | 
-        (周四) | 
-        (周五) | 
-        (周六)
-    """, re.VERBOSE)
-    # 剔除所有数字
-    decimal_regex = re.compile(r"[\d+\.\d*]]")
-    # 剔除空格
-    space_regex = re.compile(r"\s+")
-
-    # eng
     eng_regex = re.compile(r'[a-zA-Z]')
-
-    # punc
     punc_regex = re.compile(r'[\W]')  # ("[" + re.escape(string.punctuation) + "]")
+    decimal_regex = re.compile(r'[\d]')
 
-    line = url_regex.sub(r"", line)
-    line = data_regex.sub(r"", line)
-    line = space_regex.sub(r"", line)
+    line = punc_regex.sub(r"", line)
     line = decimal_regex.sub(r"", line)
     line = eng_regex.sub(r"", line)
-    line = punc_regex.sub(r"", line)
 
     return line
 
@@ -57,14 +32,23 @@ def chinese_tokenize(tokens):
     return list(jieba.cut(tokens, cut_all=False))
 
 
+
 def find_sub_list(sl, l):
-    results = []
+
     sll = len(sl)
-    for ind in (i for i, e in enumerate(l) if e == sl[0]):
-        if l[ind:ind + sll] == sl:
-            results.append((ind, ind + sll - 1))
-        if len(results) > 0:
-            return results[0]
+    for idx,ele in enumerate(l) :
+        if ele == sl[0]:
+            if l[idx:idx+sll]==sl:
+                break
+    l = l[:idx + sll] + '\u5929\u5b89\u95e8 ' + l[idx + sll:]
+    l = l[:idx] + '\u9955\u992e' + l[idx:]
+
+    l = word_tokenize(l)
+    end = l.index('\u5929\u5b89\u95e8')
+    start = l.index('\u9955\u992e')
+    #
+
+    return start+1, end
 
 
 class DuReader:
@@ -104,7 +88,7 @@ class DuReader:
             self.save_datasets(saved_datasets)
 
         print('generate_vocab')
-        self.word_type.build_vocab(*self.datasets.values())
+        self.word_type.build_vocab(*self.datasets.values(), vectors = Tencent_vec)
 
         print('generate iterator')
         self.data_iterators = dict()
@@ -163,7 +147,7 @@ class DuReader:
                                 answer = regex_change(answer)
                                 ans_tokens = chinese_tokenize(answer)
                                 try:
-                                    (s_idx, e_idx) = find_sub_list(ans_tokens, con_tokens)
+                                    (s_idx, e_idx) = find_sub_list(answer, context)
                                     dump.append(dict([('id', example_id),
                                                       ('context', context),
                                                       ('question', question),
@@ -180,4 +164,10 @@ class DuReader:
 
 
 if __name__ == '__main__':
-    du_reader = DuReader('raw_examples.json', 'processed_examples.json', 'train_val_dataset.pt')
+    wv_from_text = KeyedVectors.load_word2vec_format('/Users/liangyuan/Downloads/Tencent_AILab_ChineseEmbedding/Tencent_AILab_ChineseEmbedding.txt', binary = False)
+    Tencent_vec = wv_from_text.wv
+    print(Tencent_vec .word_vec('\u5929\u5b89\u95e8', use_norm=True))
+
+
+    raw_file = '/Users/liangyuan/Desktop/NLP/BiDAF-pytorch/.data/DuReader/10000+_search.train.json'
+    du_reader = DuReader(raw_file, 'processed_examples.json', 'train_val_dataset.pt')
