@@ -66,21 +66,19 @@ class MTEmbedding(nn.Module):
 class HignWay(nn.Module):
     def __init__(self, d):
         super(HignWay, self).__init__()
-        self.linear_layers = []
-        self.gate_layers = []
         for i in range(2):
-            self.linear_layers.append(
-                nn.Sequential(Linear(2 * d, 2 * d), nn.ReLU())
-            )
-            self.gate_layers.append(
-                nn.Sequential(Linear(2 * d, 2 * d), nn.Sigmoid())
-            )
+            setattr(self, 'linear{}'.format(i),
+                    nn.Sequential(Linear(d * 2, d * 2),
+                                  nn.ReLU()))
+            setattr(self, 'gate{}'.format(i),
+                    nn.Sequential(Linear(d * 2, d * 2),
+                                  nn.Sigmoid()))
 
     def forward(self, x):
         # x = torch.cat([x1, x2], dim=-1)
         for i in range(2):
-            h = self.linear_layers[i](x)
-            g = self.gate_layers[i](x)
+            h = getattr(self, 'linear{}'.format(i))(x)
+            g = getattr(self, 'gate{}'.format(i))(x)
             x = g * h + (1 - g) * x
         return x
 
@@ -193,6 +191,8 @@ class BiDAF(nn.Module):
             d=self.hidden_dim,
             dropout=self.dropout
         )
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.to(device=self.device)
 
     def forward(self, batch):
         context, context_len = batch.context[0], batch.context[1]
