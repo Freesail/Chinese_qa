@@ -10,14 +10,23 @@ import re
 
 
 class DataPipeline:
-    def __init__(self, raw_examples,
-                 processed_examples,
+    def __init__(self, raw_folder,
+                 train_file,
+                 processed_folder,
                  saved_datasets,
+                 val_file=None,
                  language='English',
                  context_threshold=-1):
 
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.raw_fold = raw_folder
+        self.train_file = train_file
+        self.processed_folder = processed_folder
+        self.save_datasets = saved_datasets
+        self.val_file = val_file
         self.language = language
+        self.context_threshold = context_threshold
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
         if self.language == 'English':
             self.tokenize = lambda x: \
                 [token.replace("''", '"').replace("``", '"') for token in nltk.word_tokenize(x)]
@@ -26,14 +35,15 @@ class DataPipeline:
             self.tokenize = lambda x: list(jieba.cut(x, cut_all=False))
             self.word_vector = vocab.Vectors('Tencent_AILab_ChineseEmbedding.txt')
 
-        self.context_threshold = context_threshold
-        self.processed_examples = processed_examples
-        if not os.path.exists(processed_examples):
+        if not os.path.exists(processed_folder):
             print('preprocess raw examples')
-            if self.language == 'English':
-                self.process_eng(raw_examples, processed_examples)
-            else:
-                self.process_ch(raw_examples, processed_examples)
+            for examples in os.listdir(raw_folder):
+                raw_examples = os.path.join(raw_folder, examples)
+                processed_examples = os.path.join(processed_folder, examples)
+                if self.language == 'English':
+                    self.process_eng(raw_examples, processed_examples)
+                else:
+                    self.process_ch(raw_examples, processed_examples)
 
         self.id_type = data.RawField(is_target=False)
         if self.language == 'English':
@@ -57,11 +67,19 @@ class DataPipeline:
             self.datasets = self.load_datasets(saved_datasets)
         else:
             print('generate and save datasets')
-            datasets = data.TabularDataset(
-                path=self.processed_examples,
-                format='json',
-                fields=self.fields,
-            ).split(split_ratio=0.7)
+            if self.language == 'English':
+                datasets = data.TabularDataset.splits(
+                    path=processed_folder,
+                    train=train_file,
+                    validation=val_file,
+                    format='json',
+                    fields=self.fields)
+            else:
+                datasets = data.TabularDataset(
+                    path=os.path.join(processed_folder, train_file),
+                    format='json',
+                    fields=self.fields,
+                ).split(split_ratio=0.7)
 
             if self.context_threshold > 0:
                 datasets[0].examples = \
