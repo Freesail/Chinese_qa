@@ -122,7 +122,6 @@ class DataPipeline:
             repeat=True,
             shuffle=True,
             sort=True,
-            sort_within_batch=True,
             device=self.device,
         )
         self.data_iterators['val'] = data.BucketIterator(
@@ -131,7 +130,6 @@ class DataPipeline:
             sort_key=lambda x: len(x.context),
             repeat=True,
             sort=True,
-            sort_within_batch=True,
             device=self.device,
         )
 

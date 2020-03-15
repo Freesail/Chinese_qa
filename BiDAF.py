@@ -31,7 +31,7 @@ class LSTM(nn.Module):
             input=x,
             lengths=x_len,
             batch_first=True,
-            enforce_sorted=True
+            enforce_sorted=False
         )
         out_packed, (h_n, c_n) = self.lstm(x_packed)
         out, _ = nn.utils.rnn.pad_packed_sequence(
@@ -213,14 +213,14 @@ class BiDAF(nn.Module):
         q = self.highway(q)
 
         # 3. Contextual Embedding Layer
-        c = self.context_LSTM(c, context_len)
-        q = self.context_LSTM(q, question_len)
+        c = self.context_lstm(c, context_len)
+        q = self.context_lstm(q, question_len)
 
         # 4. Attention Flow Layer
         g = self.attention_flow(c, q)
 
         # 5. Modeling Layer
-        m = self.modeling_LSTM(g, context_len)
+        m = self.modeling_lstm(g, context_len)
 
         # 6. Output Layer
         p1, p2 = self.qa_output(g, m, context_len)

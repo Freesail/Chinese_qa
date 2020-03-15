@@ -28,7 +28,7 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
 
             for i, batch in enumerate(data_pipeline.data_iterators[phase]):
                 optimizer.zero_grad()
-                with torch.set_grad_enable(phase == 'train'):
+                with torch.set_grad_enabled(phase == 'train'):
                     p1, p2 = model(batch)
                     loss = criterion(p1, batch.s_idx) + criterion(p2, batch.e_idx)
                     if phase == 'train':

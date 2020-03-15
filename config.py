@@ -24,7 +24,7 @@ dureader_cfg = {
 
 model_cfg = {
     'cxt_emb': None,
-    'hidden_dim': 100 + 0,
+    'hidden_dim': int(100 + 0)/2,
     'dropout': 0.2
 }
 
