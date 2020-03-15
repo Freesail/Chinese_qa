@@ -7,6 +7,7 @@ import nltk
 import json
 import jieba
 import re
+import dill
 
 
 class DataPipeline:
@@ -51,7 +52,9 @@ class DataPipeline:
         self.id_type = data.RawField(is_target=False)
 
         if os.path.exists(saved_field):
-            self.word_type = torch.load(saved_field)
+            # self.word_type = torch.load(saved_field)
+            with open(saved_field, 'rb') as f:
+                self.word_type = dill.load(f)
         else:
             if self.language == 'English':
                 word_vector = GloVe(name='6B', dim=100)
@@ -105,7 +108,9 @@ class DataPipeline:
         else:
             print('generate_vocab')
             self.word_type.build_vocab(*self.datasets.values(), vectors=word_vector)
-            torch.save(self.word_type, saved_field)
+            with open(saved_field, 'wb') as f:
+                dill.dump(self.word_type, f)
+            # torch.save(self.word_type, saved_field)
 
         print('generate iterator')
         self.data_iterators = dict()

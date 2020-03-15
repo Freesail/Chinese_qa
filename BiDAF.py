@@ -53,10 +53,10 @@ class Linear(nn.Module):
         return x
 
 
-# TODO: finisth this part
-class CTXEmbedding(nn.Module):
+# TODO: finisth this part, no need gradient, always validation mode
+class MTEmbedding(nn.Module):
     def __init__(self, encoder):
-        super(CTXEmbedding, self).__init__()
+        super(MTEmbedding, self).__init__()
         self.encoder = encoder
 
     def forward(self, x, x_len):
@@ -152,15 +152,22 @@ class QAOutput(nn.Module):
 class BiDAF(nn.Module):
     def __init__(self,
                  word_emb,
-                 cxt_emb):
+                 cxt_emb=None,
+                 hidden_dim=100,
+                 dropout=0.2):
         super(BiDAF, self).__init__()
 
         # 1a. word Embedding layer
         self.word_emb = nn.Embedding.from_pretrained(word_emb, freeze=True)
         # 1b. cxt Embedding layer
-        self.cxt_emb = None
-        # TODO: sum to hidden dim
-        self.hidden_dim = 10
+        if cxt_emb is None:
+            self.cxt_emb = None
+        elif cxt_emb == 'mt_emb':
+            # TODO
+            pass
+            # self.cxt_emb = CTXEmbedding()
+        self.dropout = dropout
+        self.hidden_dim = hidden_dim
 
         # 2. Highway
         self.highway = HignWay(d=self.hidden_dim)
@@ -170,7 +177,7 @@ class BiDAF(nn.Module):
             input_size=self.hidden_dim * 2,
             hidden_size=self.hidden_dim,
             bidirectional=True,
-            input_dropout=args.dropout)
+            input_dropout=self.dropout)
 
         self.attention_flow = AttentionFlow(d=self.hidden_dim)
 
@@ -179,12 +186,12 @@ class BiDAF(nn.Module):
             hidden_size=self.hidden_dim,
             num_layers=2,
             bidirectional=True,
-            input_dropout=args.dropout
+            input_dropout=self.dropout
         )
 
         self.qa_output = QAOutput(
             d=self.hidden_dim,
-            dropout=args.dropout
+            dropout=self.dropout
         )
 
     def forward(self, batch):
@@ -196,7 +203,6 @@ class BiDAF(nn.Module):
         q = self.word_emb(question)
         # 1b. cxt Embedding Layer
         if self.cxt_emb is not None:
-            # TODO
             c_cxt = self.cxt_emb(context, context_len)
             q_cxt = self.cxt_emb(question, question_len)
             c = torch.cat([c, c_cxt], dim=-1)

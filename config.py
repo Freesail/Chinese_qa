@@ -21,3 +21,15 @@ dureader_cfg = {
     'val_file': None,
     'batch_size': 64
 }
+
+model_cfg = {
+    'cxt_emb': None,
+    'hidden_dim': 100 + 0,
+    'dropout': 0.2
+}
+
+train_cfg = {
+    'lr': 3e-4,
+    'num_epochs': 10,
+    'batch_per_disp': 100,
+}
