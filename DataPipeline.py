@@ -21,7 +21,7 @@ class DataPipeline:
         self.raw_fold = raw_folder
         self.train_file = train_file
         self.processed_folder = processed_folder
-        self.save_datasets = saved_datasets
+        self.saved_datasets = saved_datasets
         self.val_file = val_file
         self.language = language
         self.context_threshold = context_threshold
