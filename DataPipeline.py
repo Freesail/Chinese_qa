@@ -36,6 +36,7 @@ class DataPipeline:
             self.word_vector = vocab.Vectors('Tencent_AILab_ChineseEmbedding.txt')
 
         if not os.path.exists(processed_folder):
+            os.mkdir(processed_folder)
             print('preprocess raw examples')
             for examples in os.listdir(raw_folder):
                 raw_examples = os.path.join(raw_folder, examples)
