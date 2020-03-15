@@ -6,6 +6,7 @@ squad_cfg = {
     'val_file': 'dev-v1.1.json',
     'language': 'English',
     'context_threshold': 500,
+    'batch_size': 64
 }
 
 dureader_cfg = {
@@ -14,5 +15,7 @@ dureader_cfg = {
     'processed_folder': 'dureader_pro',
     'saved_datasets': 'dureader_datasets.pt',
     'language': 'Chinese',
-    'context_threshold': 500
+    'context_threshold': 500,
+    'val_file': None,
+    'batch_size': 64
 }

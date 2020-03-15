@@ -16,7 +16,8 @@ class DataPipeline:
                  saved_datasets,
                  val_file=None,
                  language='English',
-                 context_threshold=-1):
+                 context_threshold=-1,
+                 batch_size=64):
 
         self.raw_fold = raw_folder
         self.train_file = train_file
@@ -25,6 +26,7 @@ class DataPipeline:
         self.val_file = val_file
         self.language = language
         self.context_threshold = context_threshold
+        self.batch_size = batch_size
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         if self.language == 'English':
@@ -99,20 +101,22 @@ class DataPipeline:
         self.data_iterators = dict()
         self.data_iterators['train'] = data.BucketIterator(
             self.datasets['train'],
-            batch_size=1,
+            batch_size=batch_size,
             sort_key=lambda x: len(x.context),
             train=True,
             repeat=True,
             shuffle=True,
             sort=True,
+            sort_within_batch=True,
             device=self.device,
         )
         self.data_iterators['val'] = data.BucketIterator(
             self.datasets['val'],
-            batch_size=1,
+            batch_size=batch_size,
             sort_key=lambda x: len(x.context),
             repeat=True,
             sort=True,
+            sort_within_batch=True,
             device=self.device,
         )
 
