@@ -31,6 +31,12 @@ class DataPipeline:
         self.saved_field = saved_field
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+        if self.language == 'English':
+            self.tokenize = lambda x: \
+                [token.replace("''", '"').replace("``", '"') for token in nltk.word_tokenize(x)]
+        else:
+            self.tokenize = lambda x: list(jieba.cut(x, cut_all=False))
+
         if not os.path.exists(processed_folder):
             os.mkdir(processed_folder)
             print('preprocess raw examples')
@@ -43,20 +49,18 @@ class DataPipeline:
                     self.process_ch(raw_examples, processed_examples)
 
         self.id_type = data.RawField(is_target=False)
+
         if os.path.exists(saved_field):
             self.word_type = torch.load(saved_field)
         else:
             if self.language == 'English':
-                tokenize = lambda x: \
-                    [token.replace("''", '"').replace("``", '"') for token in nltk.word_tokenize(x)]
                 word_vector = GloVe(name='6B', dim=100)
                 self.word_type = data.Field(batch_first=True, include_lengths=True,
-                                            tokenize=tokenize, lower=True)
+                                            tokenize=self.tokenize, lower=True)
             else:
-                tokenize = lambda x: list(jieba.cut(x, cut_all=False))
                 word_vector = vocab.Vectors('Tencent_AILab_ChineseEmbedding.txt')
                 self.word_type = data.Field(batch_first=True, include_lengths=True,
-                                            tokenize=tokenize)
+                                            tokenize=self.tokenize)
         self.idx_type = data.Field(sequential=False, use_vocab=False, unk_token=None)
 
         self.fields = {
