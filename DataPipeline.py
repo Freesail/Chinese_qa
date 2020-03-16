@@ -247,12 +247,14 @@ class DataPipeline:
                                 answer = regex_change(answer)
                                 try:
                                     (s_idx, e_idx) = find_sub_list(answer, context)
-                                    dump.append(dict([('id', example_id),
-                                                      ('context', context),
-                                                      ('question', question),
-                                                      ('answer', answer),
-                                                      ('s_idx', s_idx),
-                                                      ('e_idx', e_idx)]))
+                                    if e_idx < len(con_tokens):
+                                        dump.append(dict([('id', example_id),
+                                                          ('context', context),
+                                                          ('question', question),
+                                                          ('answer', answer),
+                                                          ('s_idx', s_idx),
+                                                          ('e_idx', e_idx)]))
+
                                 except (TypeError, IndexError) as error:
                                     pass
 

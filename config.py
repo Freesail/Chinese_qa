@@ -29,8 +29,9 @@ model_cfg = {
 }
 
 train_cfg = {
-    'lr': 3e-4,
+    'lr': 0.5,
     'num_epochs': 10,
     'batch_per_disp': 250,
-    'ckpoint_file': 'ckpoint.pt'
+    'ckpoint_file': 'ckpoint.pt',
+    'exp_decay_rate': 0.999
 }

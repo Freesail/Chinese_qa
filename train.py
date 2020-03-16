@@ -5,6 +5,7 @@ import torch
 import json
 from DataPipeline import DataPipeline
 from model import BiDAF
+from ema import EMA
 
 
 def f1_score(pred, gt):
@@ -31,9 +32,12 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
     )
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     bidaf = BiDAF(word_emb=data_pipeline.word_type.vocab.vectors, **model_cfg)
-
+    ema = EMA(train_cfg['exp_decay_rate'])
+    for name, param in bidaf.named_parameters():
+        if param.requires_grad:
+            ema.register(name, param.data)
     parameters = filter(lambda p: p.requires_grad, bidaf.parameters())
-    optimizer = optim.Adam(parameters, lr=train_cfg['lr'])
+    optimizer = optim.Adadelta(parameters, lr=train_cfg['lr'])
     criterion = nn.CrossEntropyLoss()
 
     result = {
@@ -55,6 +59,11 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                 bidaf.train()
             else:
                 bidaf.eval()
+                backup_params = EMA(0)
+                for name, param in bidaf.named_parameters():
+                    if param.requires_grad:
+                        backup_params.register(name, param.data)
+                        param.data.copy_(ema.get(name))
 
             with torch.set_grad_enabled(phase == 'train'):
                 for batch_num, batch in enumerate(data_pipeline.data_iterators[phase]):
@@ -65,6 +74,9 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
+                        for name, param in bidaf.named_parameters():
+                            if param.requires_grad:
+                                ema.update(name, param.data)
                         if batch_num % train_cfg['batch_per_disp'] == 0:
                             batch_loss = loss.item()
                             print('batch %d: loss %.3f' % (batch_num, batch_loss))
@@ -87,6 +99,9 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                             val_em += exact_match_score(answer, gt)
 
             if phase == 'val':
+                for name, param in bidaf.named_parameters():
+                    if param.requires_grad:
+                        param.data.copy_(backup_params.get(name))
                 val_f1 = val_f1 * 100 / val_cnt
                 val_em = val_em * 100 / val_cnt
                 print('Epoch %d: %s f1 %.3f | %s em %.3f'

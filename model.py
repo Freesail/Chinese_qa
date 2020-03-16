@@ -184,6 +184,7 @@ class BiDAF(nn.Module):
             hidden_size=self.hidden_dim,
             num_layers=2,
             bidirectional=True,
+            lstm_dropout=self.dropout,
             input_dropout=self.dropout
         )
 
