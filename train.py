@@ -73,8 +73,8 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                         batch_size, c_len = p1.size()
                         val_cnt += batch_size
                         ls = nn.LogSoftmax(dim=1)
-                        mask = (torch.ones(c_len, c_len) * float('-inf')).to(device).tril(-1).unsqueeze(0).expand(
-                            batch_size, -1, -1)
+                        mask = (torch.ones(c_len, c_len) * float('-inf')).to(device).tril(-1).\
+                            unsqueeze(0).expand(batch_size, -1, -1)
                         score = (ls(p1).unsqueeze(2) + ls(p2).unsqueeze(1)) + mask
                         score, s_idx = score.max(dim=1)
                         score, e_idx = score.max(dim=1)
@@ -93,6 +93,7 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                       % (epoch, phase, val_f1, phase, val_em))
                 if val_f1 > result['best_f1']:
                     result['best_f1'] = val_f1
+                    resutl['best_em'] = val_em
                     result['best_model'] = copy.deepcopy(bidaf.state_dict())
-                    with open(train_cfg['val_answers'], 'w', encoding='utf-8') as f:
-                        print(json.dumps(val_answers), file=f)
+                    # with open(train_cfg['val_answers'], 'w', encoding='utf-8') as f:
+                    #     print(json.dumps(val_answers), file=f)

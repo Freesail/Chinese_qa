@@ -63,9 +63,9 @@ class MTEmbedding(nn.Module):
         return self.encoder(x, x_len)[0]
 
 
-class HignWay(nn.Module):
+class HighWay(nn.Module):
     def __init__(self, d):
-        super(HignWay, self).__init__()
+        super(HighWay, self).__init__()
         for i in range(2):
             setattr(self, 'linear{}'.format(i),
                     nn.Sequential(Linear(d * 2, d * 2),
@@ -168,7 +168,7 @@ class BiDAF(nn.Module):
         self.hidden_dim = hidden_dim
 
         # 2. Highway
-        self.highway = HignWay(d=self.hidden_dim)
+        self.highway = HighWay(d=self.hidden_dim)
 
         # 3. Contextual Embedding Layer
         self.context_lstm = LSTM(
