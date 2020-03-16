@@ -227,7 +227,7 @@ class DataPipeline:
             l = self.tokenize(l)
             end = l.index('\u5929\u5b89\u95e8')
             start = l.index('\u9955\u992e')
-            return start + 1, end
+            return start, end-1
 
         dump = []
         with open(raw_examples, 'r') as f:  # , encoding='utf-8'

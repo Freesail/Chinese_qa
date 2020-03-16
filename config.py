@@ -7,7 +7,7 @@ squad_cfg = {
     'val_file': 'dev-v1.1.json',
     'language': 'English',
     'context_threshold': 500,
-    'batch_size': 64
+    'batch_size': 128
 }
 
 dureader_cfg = {
@@ -19,19 +19,18 @@ dureader_cfg = {
     'language': 'Chinese',
     'context_threshold': 500,
     'val_file': None,
-    'batch_size': 64
+    'batch_size': 128
 }
 
 model_cfg = {
     'cxt_emb': None,
-    'hidden_dim': int((100 + 0)/2),
+    'hidden_dim': int((200 + 0)/2),
     'dropout': 0.2,
 }
 
 train_cfg = {
     'lr': 3e-4,
     'num_epochs': 10,
-    'batch_per_disp': 1000,
-    'val_answers': 'val_answers.json',
+    'batch_per_disp': 250,
     'ckpoint_file': 'ckpoint.pt'
 }
