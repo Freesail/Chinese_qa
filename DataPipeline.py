@@ -79,19 +79,19 @@ class DataPipeline:
             self.datasets = self.load_datasets(saved_datasets)
         else:
             print('generate and save datasets')
-            if self.language == 'English':
-                datasets = data.TabularDataset.splits(
-                    path=processed_folder,
-                    train=train_file,
-                    validation=val_file,
-                    format='json',
-                    fields=self.fields)
-            else:
-                datasets = data.TabularDataset(
-                    path=os.path.join(processed_folder, train_file),
-                    format='json',
-                    fields=self.fields,
-                ).split(split_ratio=0.7)
+            # if self.language == 'English':
+            datasets = data.TabularDataset.splits(
+                path=processed_folder,
+                train=train_file,
+                validation=val_file,
+                format='json',
+                fields=self.fields)
+            # else:
+            #     datasets = data.TabularDataset(
+            #         path=os.path.join(processed_folder, train_file),
+            #         format='json',
+            #         fields=self.fields,
+            #     ).split(split_ratio=0.7)
 
             if self.context_threshold > 0:
                 datasets[0].examples = \
@@ -227,7 +227,7 @@ class DataPipeline:
             l = self.tokenize(l)
             end = l.index('\u5929\u5b89\u95e8')
             start = l.index('\u9955\u992e')
-            return start, end-1
+            return start, end-2
 
         dump = []
         with open(raw_examples, 'r') as f:  # , encoding='utf-8'

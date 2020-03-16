@@ -1,30 +1,30 @@
 squad_cfg = {
     'raw_folder': 'squad',
-    'train_file': 'train-v1.1.json',
+    'train_file': 'squad_train.json',
     'processed_folder': 'squad_pro',
     'saved_datasets': 'squad_datasets.pt',
     'saved_field': 'squad_field.pt',
-    'val_file': 'dev-v1.1.json',
+    'val_file': 'squad_val.json',
     'language': 'English',
     'context_threshold': 500,
-    'batch_size': 128
+    'batch_size': 64
 }
 
 dureader_cfg = {
     'raw_folder': 'dureader',
-    'train_file': None,
+    'train_file': 'dureader_train.json',
     'processed_folder': 'dureader_pro',
     'saved_datasets': 'dureader_datasets.pt',
     'saved_field': 'dureader_field.pt',
     'language': 'Chinese',
     'context_threshold': 500,
-    'val_file': None,
-    'batch_size': 128
+    'val_file': 'dureader_val.json',
+    'batch_size': 64
 }
 
 model_cfg = {
     'cxt_emb': None,
-    'hidden_dim': int((200 + 0)/2),
+    'hidden_dim': int((200 + 0) / 2),
     'dropout': 0.2,
 }
 
