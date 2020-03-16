@@ -95,5 +95,6 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                     result['best_f1'] = val_f1
                     result['best_em'] = val_em
                     result['best_model'] = copy.deepcopy(bidaf.state_dict())
+                    torch.save(result, train_cfg['ckpoint_file'])
                     # with open(train_cfg['val_answers'], 'w', encoding='utf-8') as f:
                     #     print(json.dumps(val_answers), file=f)

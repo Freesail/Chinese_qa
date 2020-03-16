@@ -32,5 +32,6 @@ train_cfg = {
     'lr': 3e-4,
     'num_epochs': 10,
     'batch_per_disp': 1000,
-    'val_answers': 'val_answers.json'
+    'val_answers': 'val_answers.json',
+    'ckpoint_file': 'ckpoint.pt'
 }
