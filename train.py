@@ -4,7 +4,7 @@ from torch import optim, nn
 import torch
 import json
 from DataPipeline import DataPipeline
-from BiDAF import BiDAF
+from model import BiDAF
 
 
 def f1_score(pred, gt):
@@ -93,7 +93,7 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                       % (epoch, phase, val_f1, phase, val_em))
                 if val_f1 > result['best_f1']:
                     result['best_f1'] = val_f1
-                    resutl['best_em'] = val_em
+                    result['best_em'] = val_em
                     result['best_model'] = copy.deepcopy(bidaf.state_dict())
                     # with open(train_cfg['val_answers'], 'w', encoding='utf-8') as f:
                     #     print(json.dumps(val_answers), file=f)
