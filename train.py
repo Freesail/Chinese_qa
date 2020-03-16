@@ -8,6 +8,9 @@ from BiDAF import BiDAF
 
 
 def f1_score(pred, gt):
+    pred = [str(x) for x in range(pred(0), pred(1)+1)]
+    gt = [str(x) for x in range(gt[0], gt[1]+1)]
+
     common = Counter(pred) & Counter(gt)
     num_same = sum(common.values())
     if num_same == 0:
@@ -16,6 +19,10 @@ def f1_score(pred, gt):
     recall = 1.0 * num_same / len(gt)
     f1 = (2 * precision * recall) / (precision + recall)
     return f1
+
+
+def exact_match_score(pred, gt):
+    return pred == gt
 
 
 def train_val_model(pipeline_cfg, model_cfg, train_cfg):
@@ -41,6 +48,7 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
         for phase in ['train', 'val']:
             val_answers = dict()
             val_f1 = 0
+            val_em = 0
             val_cnt = 0
 
             if phase == 'train':
@@ -73,11 +81,14 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                         s_idx = torch.gather(s_idx, 1, e_idx.view(-1, 1)).squeeze()
 
                         for i in range(batch_size):
-                            answer = batch.context[0][i][s_idx[i]:e_idx[i] + 1]
-                            answer = ' '.join([data_pipeline.word_type.vocab.itos[idx] for idx in answer])
-                            val_answers[id] = answer
-                            gt = batch.answer[batch.id[i]]
+                            # answer = batch.context[0][i][s_idx[i]:e_idx[i] + 1]
+                            # answer = ' '.join([data_pipeline.word_type.vocab.itos[idx] for idx in answer])
+                            # val_answers[id] = answer
+                            # gt = batch.answer[batch.id[i]]
+                            answer = (s_idx[i], e_idx[i])
+                            gt = (batch.s_idx[i], batch.e_idx[i])
                             val_f1 += f1_score(answer, gt)
+                            val_em += exact_match_score(answer, gt)
 
             if phase == 'val':
                 val_f1 = val_f1 * 100 / val_cnt
@@ -86,4 +97,3 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                     result['best_model'] = copy.deepcopy(bidaf.state_dict())
                     with open(train_cfg['val_answers'], 'w', encoding='utf-8') as f:
                         print(json.dumps(val_answers), file=f)
-
