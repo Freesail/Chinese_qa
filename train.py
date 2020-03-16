@@ -8,7 +8,7 @@ from BiDAF import BiDAF
 
 
 def f1_score(pred, gt):
-    pred = [str(x) for x in range(pred(0), pred(1)+1)]
+    pred = [str(x) for x in range(pred[0], pred[1]+1)]
     gt = [str(x) for x in range(gt[0], gt[1]+1)]
 
     common = Counter(pred) & Counter(gt)
