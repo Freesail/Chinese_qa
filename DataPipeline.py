@@ -119,7 +119,6 @@ class DataPipeline:
             batch_size=batch_size,
             sort_key=lambda x: len(x.context),
             train=True,
-            repeat=True,
             shuffle=True,
             sort=True,
             device=self.device,
@@ -128,7 +127,6 @@ class DataPipeline:
             self.datasets['val'],
             batch_size=batch_size,
             sort_key=lambda x: len(x.context),
-            repeat=True,
             sort=True,
             device=self.device,
         )

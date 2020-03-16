@@ -25,11 +25,12 @@ dureader_cfg = {
 model_cfg = {
     'cxt_emb': None,
     'hidden_dim': int((100 + 0)/2),
-    'dropout': 0.2
+    'dropout': 0.2,
 }
 
 train_cfg = {
     'lr': 3e-4,
     'num_epochs': 10,
-    'batch_per_disp': 100,
+    'batch_per_disp': 1000,
+    'val_answers': 'val_answers.json'
 }
