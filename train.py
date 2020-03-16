@@ -8,8 +8,8 @@ from BiDAF import BiDAF
 
 
 def f1_score(pred, gt):
-    pred = [str(x) for x in range(pred[0], pred[1]+1)]
-    gt = [str(x) for x in range(gt[0], gt[1]+1)]
+    pred = [str(x) for x in range(pred[0], pred[1] + 1)]
+    gt = [str(x) for x in range(gt[0], gt[1] + 1)]
 
     common = Counter(pred) & Counter(gt)
     num_same = sum(common.values())
@@ -81,10 +81,6 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                         s_idx = torch.gather(s_idx, 1, e_idx.view(-1, 1)).squeeze()
 
                         for i in range(batch_size):
-                            # answer = batch.context[0][i][s_idx[i]:e_idx[i] + 1]
-                            # answer = ' '.join([data_pipeline.word_type.vocab.itos[idx] for idx in answer])
-                            # val_answers[id] = answer
-                            # gt = batch.answer[batch.id[i]]
                             answer = (s_idx[i], e_idx[i])
                             gt = (batch.s_idx[i], batch.e_idx[i])
                             val_f1 += f1_score(answer, gt)
@@ -92,6 +88,9 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
 
             if phase == 'val':
                 val_f1 = val_f1 * 100 / val_cnt
+                val_em = val_em * 100 / val_cnt
+                print('Epoch %d: %s f1 %.3f | %s em %.3f'
+                      % (epoch, phase, val_f1, phase, val_em))
                 if val_f1 > result['best_f1']:
                     result['best_f1'] = val_f1
                     result['best_model'] = copy.deepcopy(bidaf.state_dict())
