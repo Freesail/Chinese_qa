@@ -41,7 +41,8 @@ class LSTM(nn.Module):
             batch_first=True,
             enforce_sorted=False
         )
-        out_packed, (h_n, c_n) = self.lstm(x_packed)
+        # out_packed, (h_n, c_n) = self.lstm(x_packed)
+        out_packed, h_n = self.lstm(x_packed)
         out, _ = nn.utils.rnn.pad_packed_sequence(
             out_packed,
             batch_first=True
