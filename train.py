@@ -99,9 +99,6 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                             val_em += exact_match_score(answer, gt)
 
             if phase == 'val':
-                for name, param in bidaf.named_parameters():
-                    if param.requires_grad:
-                        param.data.copy_(backup_params.get(name))
                 val_f1 = val_f1 * 100 / val_cnt
                 val_em = val_em * 100 / val_cnt
                 print('Epoch %d: %s f1 %.3f | %s em %.3f'
@@ -113,3 +110,6 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                     torch.save(result, train_cfg['ckpoint_file'])
                     # with open(train_cfg['val_answers'], 'w', encoding='utf-8') as f:
                     #     print(json.dumps(val_answers), file=f)
+                for name, param in bidaf.named_parameters():
+                    if param.requires_grad:
+                        param.data.copy_(backup_params.get(name))

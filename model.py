@@ -14,7 +14,15 @@ class LSTM(nn.Module):
                  input_dropout=0.2
                  ):
         super(LSTM, self).__init__()
-        self.lstm = nn.LSTM(
+        # self.lstm = nn.LSTM(
+        #     input_size=input_size,
+        #     hidden_size=hidden_size,
+        #     num_layers=num_layers,
+        #     batch_first=batch_first,
+        #     dropout=lstm_dropout,
+        #     bidirectional=bidirectional
+        # )
+        self.lstm = nn.GRU(
             input_size=input_size,
             hidden_size=hidden_size,
             num_layers=num_layers,

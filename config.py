@@ -17,21 +17,21 @@ dureader_cfg = {
     'saved_datasets': 'dureader_datasets.pt',
     'saved_field': 'dureader_field.pt',
     'language': 'Chinese',
-    'context_threshold': 500,
+    'context_threshold': 400,
     'val_file': 'dureader_val.json',
-    'batch_size': 64
+    'batch_size': 128
 }
 
 model_cfg = {
     'cxt_emb': None,
     'hidden_dim': int((200 + 0) / 2),
-    'dropout': 0.2,
+    'dropout': 0.5,
 }
 
 train_cfg = {
     'lr': 0.5,
-    'num_epochs': 10,
-    'batch_per_disp': 250,
+    'num_epochs': 50,
+    'batch_per_disp': 100,
     'ckpoint_file': 'ckpoint.pt',
     'exp_decay_rate': 0.999
 }
