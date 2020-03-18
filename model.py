@@ -1,6 +1,8 @@
 from torch import nn
 import torch
 import torch.nn.functional as F
+import mt_model
+import numpy as np
 
 
 class LSTM(nn.Module):
@@ -64,12 +66,30 @@ class Linear(nn.Module):
 
 # TODO: finisth this part, no need gradient, always validation mode
 class MTEmbedding(nn.Module):
-    def __init__(self, encoder):
+    def __init__(self, embed_size, mt_hidden_size, dropout, pretrained):
         super(MTEmbedding, self).__init__()
-        self.encoder = encoder
+        self.rnn = LSTM(
+            input_size=embed_size,
+            hidden_size=mt_hidden_size,
+            batch_first=True,
+            bidirectional=True,
+            input_dropout=dropout
+        )
+        self.rnn.load_state_dict(self.extract_state(pretrained))
+
+        for p in self.parameters():
+            p.requires_grad = False
+
+    def extract_state(self, pretrained):
+        state = {}
+        for key in pretrained.keys():
+            if 'encoder.rnn' in key:
+                new_key = key.replace('encoder.rnn', 'lstm')
+                state[new_key] = pretrained[key]
+        return state
 
     def forward(self, x, x_len):
-        return self.encoder(x, x_len)[0]
+        return self.rnn(x, x_len)
 
 
 class HighWay(nn.Module):
@@ -159,22 +179,32 @@ class QAOutput(nn.Module):
 class BiDAF(nn.Module):
     def __init__(self,
                  word_emb,
-                 cxt_emb=None,
-                 hidden_dim=100,
+                 word_emb_size,
+                 cxt_emb,
+                 cxt_emb_size,
+                 cxt_emb_pretrained,
                  dropout=0.2):
         super(BiDAF, self).__init__()
 
         # 1a. word Embedding layer
         self.word_emb = nn.Embedding.from_pretrained(word_emb, freeze=True)
+        self.word_emb_size = word_emb_size
         # 1b. cxt Embedding layer
         if cxt_emb is None:
             self.cxt_emb = None
+            self.cxt_emb_size = 0
         elif cxt_emb == 'mt_emb':
-            # TODO
-            pass
-            # self.cxt_emb = CTXEmbedding()
+            self.cxt_emb = MTEmbedding(
+                embed_size=word_emb_size,
+                mt_hidden_size=cxt_emb_size,
+                dropout=dropout,
+                pretrained=cxt_emb_pretrained
+            )
+            self.cxt_emb_size = cxt_emb_size
+        else:
+            raise NotImplementedError
         self.dropout = dropout
-        self.hidden_dim = hidden_dim
+        self.hidden_dim = (self.word_emb_size + self.cxt_emb_size) / 2
 
         # 2. Highway
         self.highway = HighWay(d=self.hidden_dim)
@@ -213,8 +243,8 @@ class BiDAF(nn.Module):
         q = self.word_emb(question)
         # 1b. cxt Embedding Layer
         if self.cxt_emb is not None:
-            c_cxt = self.cxt_emb(context, context_len)
-            q_cxt = self.cxt_emb(question, question_len)
+            c_cxt = self.cxt_emb(c, context_len)
+            q_cxt = self.cxt_emb(q, question_len)
             c = torch.cat([c, c_cxt], dim=-1)
             q = torch.cat([q, q_cxt], dim=-1)
 

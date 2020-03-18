@@ -31,6 +31,8 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
         **pipeline_cfg
     )
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    if model_cfg['cxt_emb_pretrained'] is not None:
+        model_cfg['cxt_emb_pretrained'] = torch.load(model_cfg['cxt_emb_pretrained'])
     bidaf = BiDAF(word_emb=data_pipeline.word_type.vocab.vectors, **model_cfg)
     ema = EMA(train_cfg['exp_decay_rate'])
     for name, param in bidaf.named_parameters():
@@ -85,7 +87,7 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                         batch_size, c_len = p1.size()
                         val_cnt += batch_size
                         ls = nn.LogSoftmax(dim=1)
-                        mask = (torch.ones(c_len, c_len) * float('-inf')).to(device).tril(-1).\
+                        mask = (torch.ones(c_len, c_len) * float('-inf')).to(device).tril(-1). \
                             unsqueeze(0).expand(batch_size, -1, -1)
                         score = (ls(p1).unsqueeze(2) + ls(p2).unsqueeze(1)) + mask
                         score, s_idx = score.max(dim=1)

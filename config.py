@@ -23,9 +23,11 @@ dureader_cfg = {
 }
 
 model_cfg = {
-    'cxt_emb': None,
-    'hidden_dim': int((200 + 0) / 2),
-    'dropout': 0.5,
+    'word_emb_size': 200,
+    'cxt_emb': 'mt_emb',
+    'cxt_emb_size': 200,
+    'cxt_emb_pretrained': 'translate-best.th',
+    'dropout': 0.2,
 }
 
 train_cfg = {
