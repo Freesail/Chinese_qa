@@ -19,7 +19,7 @@ dureader_cfg = {
     'language': 'Chinese',
     'context_threshold': 400,
     'val_file': 'dureader_val.json',
-    'batch_size': 128
+    'batch_size': 64
 }
 
 model_cfg = {

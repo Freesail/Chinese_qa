@@ -204,7 +204,7 @@ class BiDAF(nn.Module):
         else:
             raise NotImplementedError
         self.dropout = dropout
-        self.hidden_dim = (self.word_emb_size + self.cxt_emb_size) / 2
+        self.hidden_dim = int((self.word_emb_size + self.cxt_emb_size * 2) / 2)
 
         # 2. Highway
         self.highway = HighWay(d=self.hidden_dim)
