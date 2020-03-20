@@ -22,6 +22,21 @@ def f1_score(pred, gt):
     return f1
 
 
+def r_score(pred, gt):
+    pred = [str(x) for x in range(pred[0], pred[1] + 1)]
+    gt = [str(x) for x in range(gt[0], gt[1] + 1)]
+
+    common = Counter(pred) & Counter(gt)
+    num_same = sum(common.values())
+    if num_same == 0:
+        return 0
+    precision = 1.0 * num_same / len(pred)
+    recall = 1.0 * num_same / len(gt)
+    beta = precision / recall
+    rouge = ((1 + beta ** 2) * precision * recall) / ((beta ** 2) * precision + recall)
+    return rouge
+
+
 def exact_match_score(pred, gt):
     return pred == gt
 
@@ -56,6 +71,7 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
             val_f1 = 0
             val_em = 0
             val_cnt = 0
+            val_r = 0
 
             if phase == 'train':
                 bidaf.train()
@@ -99,12 +115,14 @@ def train_val_model(pipeline_cfg, model_cfg, train_cfg):
                             gt = (batch.s_idx[i], batch.e_idx[i])
                             val_f1 += f1_score(answer, gt)
                             val_em += exact_match_score(answer, gt)
+                            val_r += r_score(answer, gt)
 
             if phase == 'val':
                 val_f1 = val_f1 * 100 / val_cnt
                 val_em = val_em * 100 / val_cnt
-                print('Epoch %d: %s f1 %.3f | %s em %.3f'
-                      % (epoch, phase, val_f1, phase, val_em))
+                val_r = val_r * 100 / val_cnt
+                print('Epoch %d: %s f1 %.3f | %s em %.3f |  %s rouge %.3f'
+                      % (epoch, phase, val_f1, phase, val_em, phase, val_r))
                 if val_f1 > result['best_f1']:
                     result['best_f1'] = val_f1
                     result['best_em'] = val_em
